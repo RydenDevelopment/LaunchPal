@@ -1,16 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using LaunchPal.ExternalApi.OpenWeatherMap.JsonObject;
 
 namespace LaunchPal.ExternalApi.OpenWeatherMap.Request
 {
     class GetForecast
     {
-        private const string ApiKey = "&units=metric&APPID=b974b66bfbdf3d226daee40cdf52c1a7";
+        // Read from the OPENWEATHERMAP_API_KEY environment variable so the key is never committed.
+        private static string ApiKey =>
+            Environment.GetEnvironmentVariable("OPENWEATHERMAP_API_KEY")
+            ?? throw new InvalidOperationException("Environment variable OPENWEATHERMAP_API_KEY is not set.");
 
         internal static async Task<Forecast> GetForecastByCoordinates(string latitude, string longitude)
         {
-            string apiUrl = $"forecast?lat={latitude}&lon={longitude}";
-            var forecast = await HttpCaller.CallOpenWeatherMapApi<Forecast>(apiUrl + ApiKey);
+            string apiUrl = $"forecast?lat={latitude}&lon={longitude}&units=metric&APPID={ApiKey}";
+            var forecast = await HttpCaller.CallOpenWeatherMapApi<Forecast>(apiUrl);
 
             return forecast ?? new Forecast();
         }
